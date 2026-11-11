@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="kaa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Medicinalıq ximiya — Quiz</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#46178f; --bg2:#33106b; --ink:#1d1d1f; --card:#ffffff; --accent:#46178f;
+  --red:#e21b3c; --blue:#1368ce; --yellow:#d89e00; --green:#26890c;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#2d0f5e; --bg2:#1f0a42; --ink:#f4f1fb; --card:#2c2640; --accent:#d9c9ff; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#2d0f5e; --bg2:#1f0a42; --ink:#f4f1fb; --card:#2c2640; --accent:#d9c9ff; color-scheme:dark; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:#fff;min-height:100vh;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+button{font-family:inherit;cursor:pointer}
+.muted{opacity:.75}
+
+/* ---------- entry ---------- */
+.entry{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.entry h1{margin:0;font-size:clamp(32px,6vw,60px);font-weight:900;line-height:1.1}
+.entry .sub{font-size:clamp(16px,2.4vw,22px);opacity:.85;margin-bottom:10px}
+.entry .menu{display:flex;flex-direction:column;gap:12px;width:min(420px,100%)}
+.btn{background:#fff;color:#46178f;border:0;border-radius:10px;font-weight:800;font-size:18px;padding:14px 22px;box-shadow:0 4px 0 rgba(0,0,0,.28)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.btn.big{font-size:clamp(20px,2.6vw,30px);padding:16px 34px}
+.btn.sm{font-size:15px;padding:9px 16px}
+.btn.alt{background:rgba(255,255,255,.16);color:#fff}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.note{max-width:520px;font-size:13px;opacity:.7;line-height:1.45}
+
+/* ---------- layout ---------- */
+.back{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:5;background:rgba(0,0,0,.35);color:#fff;border:0;border-radius:8px;padding:6px 12px;font-size:13px}
+.stage{display:flex;gap:20px;padding:46px 14px 20px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.stage.solo-phone{padding:0}
+.board{flex:1 1 620px;min-width:300px;max-width:1100px;background:var(--bg2);border-radius:18px;padding:18px;min-height:540px;display:flex;flex-direction:column;gap:14px}
+.board.solo{min-height:calc(100vh - 66px)}
+.bhead{display:flex;justify-content:space-between;font-weight:800;opacity:.85;font-size:clamp(14px,1.8vw,20px)}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.lbl{font-size:clamp(16px,2vw,24px);font-weight:700;opacity:.9}
+.how{font-size:clamp(15px,2vw,22px);background:rgba(255,255,255,.12);padding:8px 16px;border-radius:10px;max-width:100%}
+.pin{font-size:clamp(44px,9vw,96px);font-weight:900;letter-spacing:.12em;background:var(--card);color:var(--accent);border-radius:14px;padding:4px 28px 4px 40px;line-height:1.15}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:100%;min-height:36px}
+.chip{background:rgba(255,255,255,.18);padding:6px 14px;border-radius:999px;font-weight:700;font-size:clamp(14px,1.8vw,20px)}
+.qtext{background:var(--card);color:var(--ink);border-radius:12px;padding:16px 22px;font-size:clamp(18px,2.6vw,32px);font-weight:800;text-align:center;flex:1}
+.qtext.big{font-size:clamp(24px,4vw,48px);flex:none;max-width:900px;padding:28px 34px}
+.qhead{display:flex;gap:14px;align-items:stretch}
+.timer{flex:none;width:86px;height:86px;border-radius:50%;background:var(--card);color:var(--accent);font-size:42px;font-weight:900;display:grid;place-items:center;align-self:center}
+.cntbox{flex:none;min-width:86px;background:var(--card);color:var(--accent);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;padding:6px 10px;align-self:center}
+.cntbox b{font-size:34px;line-height:1}
+.cntbox span{font-size:12px}
+.answers{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px;flex:1}
+.ans{border-radius:8px;padding:16px 18px;font-size:clamp(16px,2.3vw,30px);font-weight:800;display:flex;align-items:center;gap:14px;min-height:clamp(70px,11vh,110px);color:#fff;transition:opacity .3s}
+.answers.two .ans{min-height:clamp(90px,16vh,150px)}
+.ans .sh{font-size:1.5em;line-height:1;flex:none}
+.ans .cnt{margin-left:auto;font-size:1.2em;padding-left:8px;flex:none}
+.ans.dim{opacity:.22}
+.c0{background:var(--red)}.c1{background:var(--blue)}.c2{background:var(--yellow)}.c3{background:var(--green)}
+.bfoot{display:flex;justify-content:flex-end;gap:10px;align-items:center}
+.sb{display:flex;justify-content:space-between;background:var(--card);color:var(--ink);border-radius:8px;padding:12px 20px;font-weight:800;font-size:clamp(16px,2.4vw,28px);width:min(640px,100%)}
+.board h2{margin:0;font-size:clamp(24px,3.6vw,44px)}
+.pod{display:flex;align-items:flex-end;justify-content:center;gap:12px;width:min(640px,100%);min-height:260px}
+.pod .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.pod .pn{font-weight:800;font-size:clamp(14px,2vw,24px);word-break:break-word}
+.pod .ps{opacity:.85;font-weight:700}
+.pod .blk{width:100%;border-radius:10px 10px 0 0;display:grid;place-items:start center;font-size:44px;padding-top:8px;background:rgba(255,255,255,.2)}
+.p0 .blk{height:190px;background:#e0a800}.p1 .blk{height:140px;background:#8e99a5}.p2 .blk{height:100px;background:#b0703a}
+.tbl{width:min(640px,100%);border-collapse:collapse;font-size:clamp(14px,1.8vw,20px)}
+.tbl th,.tbl td{padding:6px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.15)}
+.tbl td:nth-child(n+3),.tbl th:nth-child(n+3){text-align:right}
+.scroll{max-height:240px;overflow:auto;width:min(640px,100%)}
+
+/* ---------- phone ---------- */
+.phone{flex:none;width:340px;height:660px;border:10px solid #111;border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.phone.full{width:100%;height:100vh;height:100dvh;border:0;border-radius:0}
+.phead{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;background:rgba(0,0,0,.35);font-weight:800;font-size:16px}
+.pc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;min-height:0}
+.pc .big{font-size:30px;font-weight:900}
+.pc .nm{font-size:22px;font-weight:800;background:rgba(255,255,255,.16);padding:6px 16px;border-radius:10px}
+.pc.ok{background:var(--green)}.pc.bad{background:var(--red)}.pc.nil{background:#555}
+.pc .pts{font-size:34px;font-weight:900}
+.pc .shbig{font-size:90px;line-height:1}
+.pc.c0full{background:var(--red)}.pc.c1full{background:var(--blue)}.pc.c2full{background:var(--yellow)}.pc.c3full{background:var(--green)}
+.logo{font-size:26px;font-weight:900;margin-bottom:6px}
+.pc input{width:100%;max-width:300px;font-size:20px;padding:13px 14px;border-radius:8px;border:2px solid #fff;text-align:center;font-weight:700;color:#1d1d1f;background:#fff}
+.err{background:rgba(0,0,0,.4);padding:8px 12px;border-radius:8px;font-size:15px;font-weight:700;max-width:300px}
+.bar{height:10px;background:rgba(255,255,255,.25);flex:none}
+.bar i{display:block;height:100%;background:#fff;animation:shrink linear forwards}
+@keyframes shrink{from{width:100%}to{width:0}}
+.pbtns{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;min-height:0}
+.pbtns.two{grid-template-columns:1fr}
+.pb{border:0;border-radius:12px;font-size:68px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.3)}
+.pb:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.demo-hint{width:100%;text-align:center;font-size:13px;opacity:.75;padding:0 12px}
+@media (max-width:700px){.phone:not(.full){width:100%;max-width:340px}}
+</style>
+</head>
+<body>
+
+<div id="entry" class="entry">
+  <h1>Medicinalıq ximiya</h1>
+  <div class="sub">Quiz oyını · 15 soraw</div>
+  <div class="menu">
+    <button class="btn big" id="mDemo">▶ Demo (bir ekranda)</button>
+    <button class="btn alt" id="mHost">🖥 Oqıtıwshı — taxta</button>
+    <button class="btn alt" id="mPlayer">📱 Oyınshı — telefon</button>
+  </div>
+  <div class="note" id="modeNote"></div>
+</div>
+
+<div id="game" hidden>
+  <button class="back" id="back">← Menyu</button>
+  <div class="stage" id="stage">
+    <div id="demoHint" class="demo-hint" hidden>Demo: oyın taxtası (oqıtıwshı) hám telefon (oyınshı) bir ekranda. PIN — 123456.</div>
+    <div id="board" class="board" hidden></div>
+    <div id="phone" class="phone" hidden></div>
+  </div>
+</div>
+
+<script>
+/* ================= Settings & questions ================= */
+const INTRO_MS = 4000, TL4 = 20, TL2 = 15;   // intro time, seconds for 4-answer / 2-answer questions
+
+const T = {
+  title:'Medicinalıq ximiya', question:'Soraw', pin:'Oyın PIN-i', namePh:'Atıńızdı kiritiń',
+  join:'Qosılıw', notFound:'Oyın tabılmadı. PIN-di tekserip kóriń.', fill:'PIN hám atıńızdı kiritiń',
+  inGame:'Siz oyındasız!', waitStart:'Oqıtıwshı oyındı baslawın kútiń...', start:'Oyındı baslaw',
+  players:'Oyınshılar', waitPlayers:'Oyınshılar qosılıwın kútemiz...', getReady:'Tayın bolıń!',
+  answered:'Juwabıńız qabıllandı', waitOthers:'Basqalardı kútemiz...', correct:'Durıs!', wrong:'Qáte',
+  noAns:'Juwap berilmedi', timeUp:'Waqıt pitti!', next:'Keyingi', skip:'Ótkiziw', results:'Nátiyjeler',
+  over:'Oyın tamamlandı!', restart:'Qayta baslaw', ball:'ball', ans:'juwap', place:'orın', streak:'qatarı menen',
+  name:'Ati', score:'Ball', right:'Durıs', wait:'Kútemiz...'
+};
+
+// a: answer options, c: index of correct answer. 2-option questions are always [Durıs, Qáte].
+const TF = ['Durıs','Qáte'];
+const Q = [
+ {q:'Zattıń ximiyalıq qásiyetlerin saqlap qalatuǵın eń kishi bólekshe qaysı?', a:['Elektron','Proton','Molekula','Neytron'], c:2},
+ {q:'Proton teris zaryadlanǵan bólekshe.', a:TF, c:1},
+ {q:'Atom yadrosı qanday bóleksheler menen quralǵan?', a:['Proton hám neytron','Elektron hám proton','Elektron hám neytron','Tek elektronlar'], c:0},
+ {q:'Neytron qanday zaryadqa iye?', a:['Oń zaryad','Zaryadsız (neytral)','Teris zaryad','Ózgerip turatuǵın zaryad'], c:1},
+ {q:'Proton sanı birdey, biraq neytron sanı hár qıylı bolǵan bir element atomları qalay ataladı?', a:['Ionlar','Molekulalar','Tuzlar','Izotoplar'], c:3},
+ {q:'Gemoglobin quramında kislorodtı tasıwǵa qatnasatuǵın qaysı element bar?', a:['Temir','Kalciy','Natriy','Mıs'], c:0},
+ {q:'Enzimler (fermentler) organizmde ximiyalıq reakciyalardı tezlestiredi.', a:TF, c:0},
+ {q:'Qandaǵı glyukoza dárejesin tómenletetuǵın gormon qaysı?', a:['Adrenalin','Kortizol','Tiroksin','Insulin'], c:3},
+ {q:'Aqsıllardıń (proteinlerdiń) qurılıs birligi qaysı?', a:['Glyukoza','Aminokislotalar','Lipidler','Vitaminler'], c:1},
+ {q:'Kislotalıq ortalıqta pH mánisi 7 den úlken boladı.', a:TF, c:1},
+ {q:'Suw molekulalarınıń yarım ótkizgish perde arqalı ótiwi qalay ataladı?', a:['Osmos','Diffuziya','Kataliz','Metabolizm'], c:0},
+ {q:'Diffuziyada zat konsentraciyası joqarı orınnan tómen orınǵa qaray ótedi.', a:TF, c:0},
+ {q:'Neytral ortalıqtıń pH mánisi neshege teń?', a:['0','7','10','14'], c:1},
+ {q:'Vitamin C basqasha qalay ataladı?', a:['Retinol','Kalciferol','Askorbin kislotası','Tokoferol'], c:2},
+ {q:'Antiseptik zatlar mikroblardı joq etiw ushın qollanıladı.', a:TF, c:0}
+];
+
+/* ================= Helpers ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SH = ['▲','◆','●','■'];                         // red, blue, yellow, green
+const sty = (k,i) => k === 2 ? [1,0][i] : i;           // 2-option: blue ◆ and red ▲
+const fmt = n => Number(n||0).toLocaleString('en').replace(/,/g,' ');
+const tlOf = q => q.tl || (q.a.length === 2 ? TL2 : TL4);
+
+/* ================= Transport ================= */
+// 'local' = in-page hub (demo) · 'bc' = BroadcastChannel (tabs of one browser) · 'sse' = Node server (real phones)
+let SERVER = false;
+const hub = new Set();
+function connect(kind, pin, onmsg){
+  if(kind === 'local'){
+    const p = {onmsg}; hub.add(p);
+    return {send(m){ const s = JSON.stringify(m); hub.forEach(q => { if(q !== p) setTimeout(() => q.onmsg(JSON.parse(s)), 0); }); },
+            close(){ hub.delete(p); }};
+  }
+  if(kind === 'bc'){
+    const ch = new BroadcastChannel('kq-' + pin);
+    ch.onmessage = e => onmsg(e.data);
+    return {send: m => ch.postMessage(m), close: () => ch.close()};
+  }
+  const cid = Math.random().toString(36).slice(2);
+  const es = new EventSource('events?pin=' + pin + '&cid=' + cid);
+  es.onmessage = e => { try{ onmsg(JSON.parse(e.data)); }catch(_){} };
+  return {send: m => { fetch('send?pin=' + pin + '&cid=' + cid, {method:'POST', body:JSON.stringify(m)}).catch(()=>{}); },
+          close: () => es.close()};
+}
+
+/* ================= HOST (the board) ================= */
+let H = null;
+
+function startHost(kind, demo){
+  const pin = demo ? '123456' : String(Math.floor(100000 + Math.random()*900000));
+  let how;
+  if(demo) how = 'Oń jaqtaǵı telefonda PIN hám atıńızdı kiritiń';
+  else if(kind === 'sse') how = 'Telefonda ashıń: ' + location.origin + ' hám PIN kiritiń';
+  else how = 'Ekinshi tab ashıp, «Oyınshı» dı tańlań hám PIN kiritiń';
+  H = {pin, how, ph:'lobby', qi:-1, players:new Map(), answers:new Map(), res:{}, dist:[], deadline:0, qStart:0, tl:TL4, tick:null, to:null, early:null};
+  H.net = connect(kind, pin, hostMsg);
+  H.pi = setInterval(pub, 5000);
+  $('#board').hidden = false;
+  $('#board').onclick = e => {
+    if(e.target.closest('#startBtn')) hostNext();
+    else if(e.target.closest('#nextBtn')) hostNext();
+    else if(e.target.closest('#skipBtn')) endQ();
+    else if(e.target.closest('#restartBtn')) restart();
+  };
+  hostRender();
+}
+
+function pub(){
+  if(!H) return;
+  const q = Q[H.qi], rv = H.ph === 'reveal' || H.ph === 'board' || H.ph === 'end';
+  H.net.send({t:'st', ph:H.ph, qi:H.qi, n:Q.length, k:q ? q.a.length : 0,
+    rem: H.ph === 'question' ? Math.max(0, H.deadline - Date.now()) : 0,
+    c: rv && q ? q.c : -1, res: rv ? H.res : null, np: H.players.size});
+}
+
+function cleanName(n){ n = String(n||'').replace(/[\u0000-\u001f\u007f<>]/g,'').trim().slice(0,16); return n || 'Oyınshı'; }
+function uniqName(n){
+  const have = new Set([...H.players.values()].map(p => p.name.toLowerCase()));
+  let r = n, i = 2; while(have.has(r.toLowerCase())) r = n + ' ' + (i++);
+  return r;
+}
+
+function hostMsg(m){
+  if(!H || !m) return;
+  if(m.t === 'join'){
+    let p = H.players.get(m.id);
+    if(!p){ p = {id:m.id, name:uniqName(cleanName(m.name)), score:0, streak:0, correct:0}; H.players.set(m.id, p); }
+    H.net.send({t:'ack', id:m.id, name:p.name});
+    pub();
+    if(H.ph === 'lobby') hostRender();
+  } else if(m.t === 'ans'){
+    if(H.ph !== 'question' || m.qi !== H.qi || H.answers.has(m.id) || !H.players.has(m.id)) return;
+    const now = Date.now(); if(now > H.deadline + 1000) return;
+    const c = +m.c; if(!(c >= 0 && c < Q[H.qi].a.length)) return;
+    H.answers.set(m.id, {c, t:Math.min(now - H.qStart, H.tl*1000)});
+    const e = $('#cnt'); if(e) e.textContent = H.answers.size;
+    if(H.answers.size >= H.players.size){ clearTimeout(H.early); H.early = setTimeout(endQ, 700); }
+  }
+}
+
+function startIntro(){
+  H.qi++; H.ph = 'intro'; H.answers = new Map();
+  hostRender(); pub();
+  H.to = setTimeout(startQ, INTRO_MS);
+}
+function startQ(){
+  H.ph = 'question'; H.tl = tlOf(Q[H.qi]);
+  H.qStart = Date.now(); H.deadline = H.qStart + H.tl*1000;
+  hostRender(); pub();
+  H.tick = setInterval(() => {
+    const r = H.deadline - Date.now(), e = $('#tm');
+    if(e) e.textContent = Math.max(0, Math.ceil(r/1000));
+    if(r <= 0) endQ();
+  }, 200);
+}
+function endQ(){
+  if(!H || H.ph !== 'question') return;
+  clearInterval(H.tick); clearTimeout(H.early);
+  const q = Q[H.qi], dist = q.a.map(() => 0); H.res = {};
+  H.players.forEach(p => {
+    const a = H.answers.get(p.id); let ok = null, pts = 0;
+    if(a){
+      dist[a.c]++; ok = a.c === q.c;
+      if(ok){
+        p.streak++; p.correct++;
+        pts = Math.round((1 - (a.t / (H.tl*1000)) / 2) * 1000) + Math.min(p.streak - 1, 5) * 100;
+        p.score += pts;
+      } else p.streak = 0;
+    } else p.streak = 0;
+    H.res[p.id] = {ok, pts, tot:0, rk:0, st:p.streak};
+  });
+  const arr = [...H.players.values()].sort((a,b) => b.score - a.score);
+  let rk = 0, prev = null;
+  arr.forEach((p,i) => { if(!prev || p.score !== prev.score) rk = i + 1; prev = p; Object.assign(H.res[p.id], {rk, tot:p.score}); });
+  H.dist = dist; H.ph = 'reveal';
+  hostRender(); pub();
+}
+function hostNext(){
+  if(H.ph === 'lobby'){ if(!H.players.size) return; H.qi = -1; startIntro(); }
+  else if(H.ph === 'reveal'){
+    if(H.qi >= Q.length - 1) H.ph = 'end'; else H.ph = 'board';
+    hostRender(); pub();
+  } else if(H.ph === 'board') startIntro();
+}
+function restart(){
+  clearTimeout(H.to); clearInterval(H.tick);
+  H.players.forEach(p => { p.score = 0; p.streak = 0; p.correct = 0; });
+  H.qi = -1; H.ph = 'lobby'; H.res = {}; H.answers = new Map();
+  hostRender(); pub();
+}
+
+function tiles(q, reveal){
+  const k = q.a.length;
+  return '<div class="answers ' + (k === 2 ? 'two' : '') + '">' + q.a.map((t,i) => {
+    const s = sty(k,i); let cls = 'ans c' + s;
+    if(reveal && i !== q.c) cls += ' dim';
+    const cnt = reveal ? '<span class="cnt">' + (H.dist[i]||0) + (i === q.c ? ' ✔' : '') + '</span>' : '';
+    return '<div class="' + cls + '"><span class="sh">' + SH[s] + '</span><span>' + esc(t) + '</span>' + cnt + '</div>';
+  }).join('') + '</div>';
+}
+
+function hostRender(){
+  const el = $('#board'); if(!el || !H) return;
+  const q = Q[H.qi];
+  let h = '<div class="bhead"><span>' + T.title + '</span><span>' +
+    (H.qi >= 0 && H.ph !== 'end' && H.ph !== 'lobby' ? T.question + ' ' + (H.qi+1) + ' / ' + Q.length : '') + '</span></div>';
+  const sorted = [...H.players.values()].sort((a,b) => b.score - a.score);
+  if(H.ph === 'lobby'){
+    h += '<div class="center"><div class="how">' + esc(H.how) + '</div>' +
+      '<div class="lbl">' + T.pin + '</div><div class="pin">' + H.pin + '</div>' +
+      '<div class="lbl">' + T.players + ': <b>' + H.players.size + '</b></div>' +
+      '<div class="chips">' + ([...H.players.values()].map(p => '<span class="chip">' + esc(p.name) + '</span>').join('') || '<span class="muted">' + T.waitPlayers + '</span>') + '</div>' +
+      '<button class="btn big" id="startBtn"' + (H.players.size ? '' : ' disabled') + '>' + T.start + '</button></div>';
+  } else if(H.ph === 'intro'){
+    h += '<div class="center"><div class="lbl">' + T.question + ' ' + (H.qi+1) + ' / ' + Q.length + '</div><div class="qtext big">' + esc(q.q) + '</div></div>';
+  } else if(H.ph === 'question'){
+    h += '<div class="qhead"><div class="timer" id="tm">' + H.tl + '</div><div class="qtext">' + esc(q.q) + '</div>' +
+      '<div class="cntbox"><b id="cnt">' + H.answers.size + '</b><span>' + T.ans + '</span></div></div>' + tiles(q,false) +
+      '<div class="bfoot"><button class="btn sm alt" id="skipBtn">' + T.skip + '</button></div>';
+  } else if(H.ph === 'reveal'){
+    h += '<div class="qhead"><div class="qtext">' + esc(q.q) + '</div></div>' + tiles(q,true) +
+      '<div class="bfoot"><button class="btn" id="nextBtn">' + T.next + '</button></div>';
+  } else if(H.ph === 'board'){
+    h += '<div class="center"><h2>' + T.results + '</h2>' +
+      sorted.slice(0,5).map((p,i) => '<div class="sb"><span>' + (i+1) + '. ' + esc(p.name) + '</span><span>' + fmt(p.score) + '</span></div>').join('') + '</div>' +
+      '<div class="bfoot"><button class="btn" id="nextBtn">' + T.next + '</button></div>';
+  } else if(H.ph === 'end'){
+    const order = [1,0,2].filter(i => sorted[i]);
+    h += '<div class="center"><h2>' + T.over + '</h2><div class="pod">' +
+      order.map(i => '<div class="col p' + i + '"><div class="pn">' + esc(sorted[i].name) + '</div><div class="ps">' + fmt(sorted[i].score) + ' ' + T.ball + '</div><div class="blk">' + ['🥇','🥈','🥉'][i] + '</div></div>').join('') +
+      '</div><div class="scroll"><table class="tbl"><tr><th>#</th><th>' + T.name + '</th><th>' + T.score + '</th><th>' + T.right + '</th></tr>' +
+      sorted.map((p,i) => '<tr><td>' + (H.res[p.id] ? H.res[p.id].rk : i+1) + '</td><td>' + esc(p.name) + '</td><td>' + fmt(p.score) + '</td><td>' + p.correct + ' / ' + Q.length + '</td></tr>').join('') +
+      '</table></div></div><div class="bfoot"><button class="btn sm alt" id="restartBtn">' + T.restart + '</button></div>';
+  }
+  el.innerHTML = h;
+}
+
+/* ================= PLAYER (the phone) ================= */
+let P = null;
+
+function startPlayer(kind, demo){
+  P = {kind, stage:'join', id:'p' + Math.random().toString(36).slice(2,9), inPin: demo ? '123456' : '', inName:'', err:'', st:null, answered:null, qLast:-1, score:0, joined:false};
+  const el = $('#phone'); el.hidden = false;
+  el.onclick = e => {
+    const b = e.target.closest('[data-a]');
+    if(b) return answer(+b.dataset.a);
+    if(e.target.closest('#joinBtn')) doJoin();
+  };
+  el.onkeydown = e => { if(e.key === 'Enter' && e.target.tagName === 'INPUT') doJoin(); };
+  phoneRender();
+}
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && P && P.joined && P.net) P.net.send({t:'join', id:P.id, name:P.name});
+});
+
+function doJoin(){
+  if(P.stage === 'joining') return;
+  P.inPin = ($('#inPin').value || '').replace(/\D/g,''); P.inName = ($('#inName').value || '').trim();
+  if(P.inPin.length !== 6 || !P.inName){ P.err = T.fill; phoneRender(); return; }
+  P.err = ''; P.stage = 'joining'; P.joined = false; phoneRender();
+  try{ P.net = connect(P.kind, P.inPin, phoneMsg); }catch(_){ failJoin(); return; }
+  let tries = 0;
+  const go = () => {
+    if(P.joined) return;
+    if(tries++ >= 4) return failJoin();
+    P.net.send({t:'join', id:P.id, name:P.inName});
+    P.jt = setTimeout(go, 1000);
+  };
+  go();
+}
+function failJoin(){
+  if(P.net) P.net.close(); P.net = null; P.stage = 'join'; P.err = T.notFound; phoneRender();
+}
+function phoneMsg(m){
+  if(!P || !m) return;
+  if(m.t === 'ack' && m.id === P.id){
+    P.joined = true; clearTimeout(P.jt); P.name = m.name; P.stage = 'in'; phoneRender();
+  } else if(m.t === 'st'){
+    P.st = m;
+    if(m.ph === 'question'){
+      if(m.qi !== P.qLast){ P.qLast = m.qi; P.answered = null; P.timeUp = false; }
+      clearTimeout(P.tt);
+      P.tt = setTimeout(() => { if(P.st && P.st.ph === 'question' && P.answered == null){ P.timeUp = true; phoneRender(); } }, m.rem + 150);
+    }
+    if(m.res && m.res[P.id]) P.score = m.res[P.id].tot;
+    phoneRender();
+  }
+}
+function answer(i){
+  const s = P.st;
+  if(!s || s.ph !== 'question' || P.answered != null || P.timeUp) return;
+  P.answered = i; P.net.send({t:'ans', id:P.id, qi:s.qi, c:i}); phoneRender();
+}
+
+function phoneRender(){
+  const el = $('#phone'); if(!el || !P) return;
+  const s = P.st, me = s && s.res && s.res[P.id];
+  if(P.stage !== 'in'){
+    el.innerHTML = '<div class="pc"><div class="logo">' + T.title + '</div>' +
+      '<input id="inPin" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="' + T.pin + '" value="' + esc(P.inPin) + '">' +
+      '<input id="inName" autocomplete="off" maxlength="16" placeholder="' + T.namePh + '" value="' + esc(P.inName) + '">' +
+      (P.err ? '<div class="err">' + esc(P.err) + '</div>' : '') +
+      '<button class="btn big" id="joinBtn"' + (P.stage === 'joining' ? ' disabled' : '') + '>' + (P.stage === 'joining' ? '…' : T.join) + '</button></div>';
+    return;
+  }
+  const head = '<div class="phead"><span>' + esc(P.name) + '</span><span>' + fmt(P.score) + '</span></div>';
+  let main;
+  if(!s || s.ph === 'lobby'){
+    main = '<div class="pc"><div class="big">' + T.inGame + '</div><div class="nm">' + esc(P.name) + '</div><div class="muted">' + T.waitStart + '</div></div>';
+  } else if(s.ph === 'intro'){
+    main = '<div class="pc"><div class="lbl">' + T.question + ' ' + (s.qi+1) + '</div><div class="big">' + T.getReady + '</div></div>';
+  } else if(s.ph === 'question'){
+    if(P.answered != null){
+      const si = sty(s.k, P.answered);
+      main = '<div class="pc c' + si + 'full"><div class="shbig">' + SH[si] + '</div><div class="big">' + T.answered + '</div><div class="muted">' + T.waitOthers + '</div></div>';
+    } else if(P.timeUp){
+      main = '<div class="pc nil"><div class="big">' + T.timeUp + '</div></div>';
+    } else {
+      let b = ''; for(let i = 0; i < s.k; i++){ const x = sty(s.k,i); b += '<button class="pb c' + x + '" data-a="' + i + '" aria-label="' + (i+1) + '">' + SH[x] + '</button>'; }
+      main = '<div class="bar"><i style="animation-duration:' + Math.max(0, s.rem) + 'ms"></i></div><div class="pbtns ' + (s.k === 2 ? 'two' : '') + '">' + b + '</div>';
+    }
+  } else if(s.ph === 'reveal' || s.ph === 'board'){
+    if(!me) main = '<div class="pc"><div class="big">' + T.wait + '</div></div>';
+    else if(me.ok === true) main = '<div class="pc ok"><div class="big">✔ ' + T.correct + '</div><div class="pts">+' + fmt(me.pts) + '</div>' + (me.st >= 2 ? '<div>🔥 ' + me.st + ' ' + T.streak + '</div>' : '') + '<div class="nm">' + me.rk + '-' + T.place + '</div></div>';
+    else if(me.ok === false) main = '<div class="pc bad"><div class="big">✖ ' + T.wrong + '</div><div class="nm">' + me.rk + '-' + T.place + '</div></div>';
+    else main = '<div class="pc nil"><div class="big">' + T.noAns + '</div><div class="nm">' + me.rk + '-' + T.place + '</div></div>';
+  } else {
+    main = '<div class="pc"><div class="big">' + T.over + '</div>' + (me ? '<div class="shbig">' + (['🥇','🥈','🥉'][me.rk-1] || '🏅') + '</div><div class="nm">' + me.rk + '-' + T.place + '</div><div class="pts">' + fmt(me.tot) + ' ' + T.ball + '</div>' : '') + '</div>';
+  }
+  el.innerHTML = head + main;
+}
+
+/* ================= Demo bots ================= */
+function startBots(){
+  ['Aydos','Gúlzar','Nurlan','Aziza','Sherzod','Dilnoza','Bekzat','Madina'].forEach((nm, i) => {
+    const id = 'bot' + i, acc = 0.5 + Math.random()*0.4; let last = -1;
+    const net = connect('local', '', m => {
+      if(m.t === 'st' && m.ph === 'question' && m.qi !== last){
+        last = m.qi; const q = Q[m.qi];
+        const d = 1200 + Math.random() * Math.min(9000, tlOf(q)*700);
+        setTimeout(() => {
+          let c = q.c;
+          if(Math.random() >= acc){ do{ c = Math.floor(Math.random()*q.a.length); }while(c === q.c); }
+          net.send({t:'ans', id, qi:m.qi, c});
+        }, d);
+      }
+    });
+    setTimeout(() => net.send({t:'join', id, name:nm}), 900 + i*650);
+  });
+}
+
+/* ================= Entry ================= */
+const hasBC = typeof BroadcastChannel !== 'undefined';
+function updateNote(){
+  const kind = SERVER ? 'server' : 'bir brauzer (BroadcastChannel)';
+  $('#modeNote').textContent = 'Rejim: ' + kind + (SERVER ? '' : ' · Demo hár qanday jaǵdayda isleydi.');
+}
+fetch('ping', {cache:'no-store'}).then(r => r.text()).then(t => { SERVER = t.trim() === 'ok-kq'; updateNote(); }).catch(() => {});
+updateNote();
+
+function enter(mode){
+  const kind = SERVER ? 'sse' : (hasBC ? 'bc' : null);
+  if(mode !== 'demo' && !kind){ $('#modeNote').textContent = 'Bul brauzerde BroadcastChannel joq. Demo rejimin paydalanıń.'; return; }
+  $('#entry').hidden = true; $('#game').hidden = false;
+  if(mode === 'demo'){
+    $('#demoHint').hidden = false;
+    startHost('local', true); startPlayer('local', true); startBots();
+  } else if(mode === 'host'){
+    $('#board').classList.add('solo'); startHost(kind, false);
+  } else {
+    $('#back').hidden = true; $('#stage').classList.add('solo-phone'); $('#phone').classList.add('full'); startPlayer(kind, false);
+  }
+}
+$('#mDemo').onclick = () => enter('demo');
+$('#mHost').onclick = () => enter('host');
+$('#mPlayer').onclick = () => enter('player');
+$('#back').onclick = () => location.reload();
+</script>
+</body>
+</html>
